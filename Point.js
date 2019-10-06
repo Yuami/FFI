@@ -10,7 +10,7 @@ class Point {
     this.r = r
     this.alpha = null
     this.charge = charge
-    this._charge = charge * Math.pow(10, -5)
+    this._charge = charge * Math.pow(10, -6)
   }
 
   getVector (point) {

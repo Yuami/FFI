@@ -157,6 +157,7 @@ function renderCanvas () {
     vector.add(p.calcCoulomb(topPoint))
   }
 
+  vector.mult(100)
   const v0 = createVector(topPoint.x, topPoint.y)
   const v1 = createVector(vector.x, vector.y)
   drawArrow(v0, v1, color(i >= n ? 'red' : 'blue'))
