@@ -153,7 +153,7 @@ function renderCanvas () {
 
   for (let p of points) {
     p.render()
-    p.lineWith(topPoint, color(qColor))
+    p.lineWith(topPoint, color(p.color))
     vector.add(p.calcCoulomb(topPoint))
   }
 
