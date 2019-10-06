@@ -30,34 +30,45 @@
     <p class="subtitle" id="text"></p>
     <div class="columns">
         <div class="control column is-2">
-            <label for="height">Height (Force P height)</label>
+            <label for="height">Height charge P (cm)</label>
             <input class="input" type="number" value="60" min="10" id="height" placeholder="Height">
         </div>
+
         <div class="control column is-2">
-            <label for="segment">Segment (Segment width) </label>
+            <label for="segment">Segment width (cm) </label>
             <input class="input" type="number" value="100" min="10" id="segment"
                    placeholder="Segment">
         </div>
+
         <div class="control column is-2">
             <label for="divisions">Divisions (nº of charges)</label>
             <input class="input" type="number" value="10" min="2" id="divisions"
                    placeholder="Divisions">
         </div>
+
         <div class="control column is-2">
             <label for="chargeP">Charge P (μC)</label>
             <input class="input" type="number" value="1" min="1" id="chargeP"
                    placeholder="Force P">
         </div>
+
         <div class="control column is-2">
             <label for="chargeQ">Charge Q (μC)</label>
             <input class="input" type="number" value="1" min="1" id="chargeQ"
                    placeholder="Force Q">
         </div>
+
         <div class="control column is-2">
             <label for="speed">Speed (Points per iteration)</label>
             <input class="input" type="number" value="1" min="1" id="speed"
                    placeholder="Iterations">
         </div>
+
+        <div class="control column is-1" onclick="possiblePointIsActiveOnChange(event)">
+            <label for="puntalCharge">Puntual charges</label>
+            <input type="checkbox" id="puntalCharge">
+        </div>
+
         <div class="column is-1">
             <button id="play"
                     class="button is-primary is-rounded"

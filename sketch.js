@@ -1,15 +1,25 @@
-const inputH = document.getElementById('height')
-const inputA = document.getElementById('segment')
-const inputN = document.getElementById('divisions')
-const inputChargeP = document.getElementById('chargeP')
-const inputChargeQ = document.getElementById('chargeQ')
-const textNode = document.getElementById('text')
-const inputSpeed = document.getElementById('speed')
+function idNodes (...ids) {
+  const nodes = {}
+  for (let id of ids) {
+    nodes['node' + id.charAt(0).toUpperCase() + id.slice(1)] = document.getElementById(id)
+  }
+  return nodes
+}
+
+const {
+  nodeHeight,
+  nodeSegment,
+  nodeDivisions,
+  nodeChargeP,
+  nodeChargeQ,
+  nodeText,
+  nodeSpeed,
+} = idNodes('height', 'segment', 'divisions', 'chargeP', 'chargeQ', 'text', 'speed')
 
 const zMin = 0.05
 const zMax = 9.00
-const sensativity = 0.005
 
+const sensativity = 0.005
 const pColor = '#C06EFF'
 const qColor = '#FF7AE4'
 const qPossibleColor = '#ff942a'
@@ -18,9 +28,11 @@ const bgColor = '#fef9ff'
 
 let h, a, n, rectX, points, x, y, a2, length, i, chargeP, chargeQ, message, topPoint, speed, vector,
   possiblePoint
+
 let zoom = 4.00,
   totalCharge = 0,
   shouldAddPoint = false,
+  possiblePointIsActive = false
   canvasCenter = {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2
@@ -29,6 +41,11 @@ let zoom = 4.00,
 function onEnter (e) {
   if (e.keyCode === 13)
     resetSketch()
+}
+
+function possiblePointIsActiveOnChange (checkbox) {
+  shouldAddPoint = false
+  possiblePointIsActive = checkbox.target.checked
 }
 
 function onKeyDown (e) {
@@ -51,17 +68,17 @@ function mouseWheel (event) {
 
 function resetSketch () {
   shouldAddPoint = false
-  inputH.value = Math.max(inputH.value, 10)
-  inputA.value = Math.max(inputA.value, 10)
-  inputN.value = Math.max(inputN.value, 1)
-  inputSpeed.value = Math.max(inputSpeed.value, 1)
+  nodeHeight.value = Math.max(nodeHeight.value, 10)
+  nodeSegment.value = Math.max(nodeSegment.value, 10)
+  nodeDivisions.value = Math.max(nodeDivisions.value, 1)
+  nodeSpeed.value = Math.max(nodeSpeed.value, 1)
 
-  h = inputH.value
-  a = inputA.value
-  n = inputN.value
-  speed = Math.min(inputSpeed.value, n)
-  chargeP = inputChargeP.value
-  chargeQ = inputChargeQ.value
+  h = nodeHeight.value
+  a = nodeSegment.value
+  n = nodeDivisions.value
+  speed = Math.min(nodeSpeed.value, n)
+  chargeP = nodeChargeP.value
+  chargeQ = nodeChargeQ.value
   i = 1
   points = []
   length = a * 3
@@ -81,27 +98,27 @@ function setup () {
 }
 
 function mouseMoved (e) {
-  possiblePoint.x = map(e.clientX, 0, width, -150, 150)
+  possiblePoint.x = map(e.clientX, 0, width, x, x + length)
 }
 
 function mouseClicked () {
-  if (shouldAddPoint)
+  if (shouldAddPoint && possiblePointIsActive)
     addPoint(possiblePoint)
   shouldAddPoint = true
 }
 
 function updateHead () {
-  textNode.innerHTML = `Total force (μN): ${totalCharge.toFixed(2)}
+  nodeText.innerHTML = `Total force: ${totalCharge.toFixed(2)}mN
                         ${i < n ? `<span class="is-small">Adding: Q${i}</span>` : ''}`
 }
 
 function addPoint (point = null) {
-  if (i > n && !point) return false
+  if (i >= n && !point) return false
   const init = point ? speed - 1 : 0
   const _color = point ? point.color : color(qColor)
   const charge = point ? point.charge : chargeQ
   for (let j = init; j < speed; j++, i++) {
-    const p = new Point(point ? point.x : x + length / n * i, y, { charge, color: _color })
+    const p = new Point(point ? point.x : x + length / (n-1) * i, y, { charge, color: _color })
     points.push(p)
     totalCharge += p.calcCharge(topPoint)
     message = `Adding charge: q${i}`
@@ -123,12 +140,14 @@ function draw () {
   translate(canvasCenter.x, canvasCenter.y)
   scale(zoom)
   addPoint()
+  window.p = points[0]
+  window.t = topPoint
+  background(bgColor)
+  drawBase()
   renderCanvas()
 }
 
 function renderCanvas () {
-  background(bgColor)
-  drawBase()
   topPoint.render()
   vector = new p5.Vector(0, 0)
 
@@ -141,7 +160,8 @@ function renderCanvas () {
   const v0 = createVector(topPoint.x, topPoint.y)
   const v1 = createVector(vector.x, vector.y)
   drawArrow(v0, v1, color(i >= n ? 'red' : 'blue'))
-  possiblePoint.render()
+  if (possiblePointIsActive)
+    possiblePoint.render()
 }
 
 function drawArrow (base, vec, myColor) {
