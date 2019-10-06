@@ -4,12 +4,13 @@ class Point {
   constructor (x, y, { charge = 1, color = color('black'), r = 2 }) {
     this.x = x
     this.y = y
-    this.calcX = x / 100
-    this.calcY = y / 100
+    this._x = x / 100
+    this._y = y / 100
     this.color = color
     this.r = r
     this.alpha = null
-    this.charge = charge * Math.pow(10, -5)
+    this.charge = charge
+    this._charge = charge * Math.pow(10, -5)
   }
 
   getVector (point) {
@@ -20,13 +21,13 @@ class Point {
   }
 
   distance (point) {
-    const x = Math.abs(this.calcX - point.calcX)
-    const y = Math.abs(this.calcY - point.calcY)
+    const x = Math.abs(this._x - point._x)
+    const y = Math.abs(this._y - point._y)
     return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2))
   }
 
   calcCharge (point) {
-    return (K * this.charge * point.charge) / Math.pow(this.distance(point), 2)
+    return (K * this._charge * point._charge) / Math.pow(this.distance(point), 2)
   }
 
   calcCoulomb (point) {

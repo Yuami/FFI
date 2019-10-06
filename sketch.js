@@ -12,13 +12,15 @@ const sensativity = 0.005
 
 const pColor = '#C06EFF'
 const qColor = '#FF7AE4'
+const qPossibleColor = '#ff942a'
 const linesColor = '#E8648B'
 const bgColor = '#fef9ff'
 
-let h, a, n, rectX, points, x, y, a2, length, i, chargeP, chargeQ, message, topPoint, speed, vector
+let h, a, n, rectX, points, x, y, a2, length, i, chargeP, chargeQ, message, topPoint, speed, vector,
+  possiblePoint
 let zoom = 4.00,
   totalCharge = 0,
-  moving = false,
+  shouldAddPoint = false,
   canvasCenter = {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2
@@ -30,7 +32,6 @@ function onEnter (e) {
 }
 
 function onKeyDown (e) {
-  moving = true
   const vel = (10 - zoom) * 3
   if (e.keyCode === 37)
     canvasCenter.x -= vel
@@ -43,13 +44,13 @@ function onKeyDown (e) {
 }
 
 function mouseWheel (event) {
-  moving = true
   zoom -= sensativity * event.delta
   zoom = constrain(zoom, zMin, zMax)
   return false
 }
 
 function resetSketch () {
+  shouldAddPoint = false
   inputH.value = Math.max(inputH.value, 10)
   inputA.value = Math.max(inputA.value, 10)
   inputN.value = Math.max(inputN.value, 1)
@@ -69,12 +70,24 @@ function resetSketch () {
   a2 = x + a * 2
   totalCharge = 0
   topPoint = new Point(a2, y - h, { charge: chargeP, color: color(pColor), r: 2 })
+  possiblePoint = new Point(0, y, { charge: chargeQ, color: qPossibleColor })
+
 }
 
 function setup () {
-  createCanvas(windowWidth - 17, windowHeight - 215)
+  createCanvas(windowWidth, windowHeight)
   rectMode(CENTER)
   resetSketch()
+}
+
+function mouseMoved (e) {
+  possiblePoint.x = map(e.clientX, 0, width, -150, 150)
+}
+
+function mouseClicked () {
+  if (shouldAddPoint)
+    addPoint(possiblePoint)
+  shouldAddPoint = true
 }
 
 function updateHead () {
@@ -82,12 +95,13 @@ function updateHead () {
                         ${i < n ? `<span class="is-small">Adding: Q${i}</span>` : ''}`
 }
 
-function addPoint () {
-  if (i > n) {
-    return false
-  }
-  for (let j = 0; j < speed; j++, i++) {
-    const p = new Point(x + length / n * i, y, { charge: chargeQ, color: color(qColor) })
+function addPoint (point = null) {
+  if (i > n && !point) return false
+  const init = point ? speed - 1 : 0
+  const _color = point ? point.color : color(qColor)
+  const charge = point ? point.charge : chargeQ
+  for (let j = init; j < speed; j++, i++) {
+    const p = new Point(point ? point.x : x + length / n * i, y, { charge, color: _color })
     points.push(p)
     totalCharge += p.calcCharge(topPoint)
     message = `Adding charge: q${i}`
@@ -105,7 +119,32 @@ function drawBase () {
   }
 }
 
-function drawArrow(base, vec, myColor) {
+function draw () {
+  translate(canvasCenter.x, canvasCenter.y)
+  scale(zoom)
+  addPoint()
+  renderCanvas()
+}
+
+function renderCanvas () {
+  background(bgColor)
+  drawBase()
+  topPoint.render()
+  vector = new p5.Vector(0, 0)
+
+  for (let p of points) {
+    p.render()
+    p.lineWith(topPoint, color(qColor))
+    vector.add(p.calcCoulomb(topPoint))
+  }
+
+  const v0 = createVector(topPoint.x, topPoint.y)
+  const v1 = createVector(vector.x, vector.y)
+  drawArrow(v0, v1, color(i >= n ? 'red' : 'blue'))
+  possiblePoint.render()
+}
+
+function drawArrow (base, vec, myColor) {
   push()
   stroke(myColor)
   fill(myColor)
@@ -116,28 +155,4 @@ function drawArrow(base, vec, myColor) {
   translate(vec.mag() - arrowSize, 0)
   triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0)
   pop()
-}
-
-function draw () {
-  translate(canvasCenter.x, canvasCenter.y)
-  scale(zoom)
-  if (addPoint() || moving) {
-    background(bgColor)
-    drawBase()
-    window.p = points[0]
-    window.t = topPoint
-
-    topPoint.render()
-    vector = new p5.Vector(0, 0)
-    for (let p of points) {
-      p.render()
-      p.lineWith(topPoint, color(qColor))
-      vector.add(p.calcCoulomb(topPoint))
-    }
-
-    let v0 = createVector(topPoint.x, topPoint.y);
-    let v1 = createVector(vector.x, vector.y);
-    drawArrow(v0, v1, color(i >= n ? 'red' : 'blue'));
-    moving = false
-  }
 }
