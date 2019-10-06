@@ -113,12 +113,12 @@ function updateHead () {
 }
 
 function addPoint (point = null) {
-  if (i >= n && !point) return false
+  if (i > n && !point) return false
   const init = point ? speed - 1 : 0
   const _color = point ? point.color : color(qColor)
   const charge = point ? point.charge : chargeQ
   for (let j = init; j < speed; j++, i++) {
-    const p = new Point(point ? point.x : x + length / (n-1) * i, y, { charge, color: _color })
+    const p = new Point(point ? point.x : x + length / n * i, y, { charge, color: _color })
     points.push(p)
     totalCharge += p.calcCharge(topPoint)
     message = `Adding charge: q${i}`
